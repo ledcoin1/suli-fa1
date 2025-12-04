@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Миниапп Дурак</title>
+<style>
+  body { background: black; color: white; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+  #balance { font-size: 24px; margin-bottom: 20px; }
+  button { padding: 10px 20px; font-size: 16px; margin: 5px; }
+</style>
+</head>
+<body>
+  <div id="balance">Баланс: ...</div>
+  <button id="addMoney">+100</button>
+  <button id="subtractMoney">-100</button>
+
+  <script>
+    const userId = 'user_' + Math.floor(Math.random() * 100000); // әр кіргенде уникалды ID
+
+    async function fetchBalance() {
+      const res = await fetch(`http://localhost:3000/balance/${userId}`);
+      const data = await res.json();
+      document.getElementById('balance').innerText = 'Баланс: ' + data.balance;
+    }
+
+    async function updateBalance(amount) {
+      const res = await fetch(`http://localhost:3000/balance/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      document.getElementById('balance').innerText = 'Баланс: ' + data.balance;
+    }
+
+    document.getElementById('addMoney').addEventListener('click', () => updateBalance(100));
+    document.getElementById('subtractMoney').addEventListener('click', () => updateBalance(-100));
+
+    fetchBalance();
+  </script>
+</body>
+</html>

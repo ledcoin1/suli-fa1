@@ -16,7 +16,7 @@
     const userId = 'user_' + Math.floor(Math.random() * 100000);
 
     async function fetchBalance() {
-      const res = await fetch(`http://localhost:3000/balance/${userId}`);
+      const res = await fetch(`https://822afe499b52.ngrok-free.app/balance/${userId}`)
       const data = await res.json();
       document.getElementById('balance').innerText = 'Баланс: ' + data.balance;
     }
@@ -25,3 +25,4 @@
   </script>
 </body>
 </html>
+

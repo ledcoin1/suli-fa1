@@ -2,161 +2,18 @@
 <html lang="kk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тас-Қағаз-Қайшы</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>Mini App Game</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #89f7fe, #66a6ff);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      color: #fff;
-      text-shadow: 2px 2px 4px #00000050;
-    }
-
-    .balance {
-      font-size: 20px;
-      margin-bottom: 15px;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    .bet-section {
-      margin-bottom: 20px;
-    }
-
-    .bet-section input {
-      width: 60px;
-      padding: 5px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
-      background: #fff;
-      color: #333;
-      font-weight: bold;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      background: #ffe680;
-    }
-
-    #result {
-      font-size: 18px;
-      font-weight: bold;
-      padding: 10px 20px;
-      border-radius: 8px;
-      min-height: 40px;
-      text-align: center;
-      color: #fff;
-      text-shadow: 1px 1px 3px #00000050;
-    }
-
-    .win { background-color: #4caf50; }
-    .lose { background-color: #f44336; }
-    .draw { background-color: #ffc107; color: #333; }
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h1>Тас-Қағаз-Қайшы</h1>
+  <h1>Telegram Mini App</h1>
+  <div id="balance">Баланс: жүктелуде...</div>
+  <button id="add10">+10 алу</button>
+  <button id="remove10">-10 алу</button>
 
-  <div class="balance">Баланс: <span id="balance">-</span></div>
-
-  <div class="bet-section">
-    <label>Ставка: <input type="number" id="bet" value="10" min="1"></label>
-  </div>
-
-  <div class="buttons">
-    <button onclick="play('тас')">Тас</button>
-    <button onclick="play('қағаз')">Қағаз</button>
-    <button onclick="play('қайшы')">Қайшы</button>
-  </div>
-
-  <div id="result">Нәтиже осы жерде шығады</div>
-
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand(); // толық экранға шығару
-
-    const backendURL = "https://backend-test-q8to.onrender.com";
-    const userId = tg.initDataUnsafe.user.id; // Telegram қолданушы ID
-
-    async function updateBalance() {
-      try {
-        const res = await fetch(`${backendURL}/getBalance`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId })
-        });
-        const data = await res.json();
-        document.getElementById("balance").textContent = data.balance;
-      } catch (err) {
-        document.getElementById("balance").textContent = "Қате";
-      }
-    }
-
-    async function play(choice) {
-      const bet = Number(document.getElementById("bet").value);
-      const resultEl = document.getElementById("result");
-      resultEl.textContent = "Ойнап жатыр…";
-      resultEl.className = '';
-
-      try {
-        const res = await fetch(`${backendURL}/play`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, choice, bet })
-        });
-        const data = await res.json();
-
-        if (data.error) {
-          resultEl.textContent = data.error;
-          resultEl.className = 'lose';
-        } else {
-          resultEl.textContent =
-            `Сіз таңдадыңыз: ${choice}, Компьютер: ${data.computerChoice}, Нәтиже: ${data.result}`;
-          document.getElementById("balance").textContent = data.balance;
-
-          if (data.result === "win") resultEl.className = 'win';
-          else if (data.result === "lose") resultEl.className = 'lose';
-          else resultEl.className = 'draw';
-        }
-      } catch (err) {
-        resultEl.textContent = "Қате: " + err.message;
-        resultEl.className = 'lose';
-      }
-    }
-
-    // Бастапқы баланс
-    updateBalance();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
-

@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Suli App</title>
+  <meta charset="UTF-8">
+  <title>Mini App</title>
 </head>
 <body>
-  <h1>SULI MINI APP</h1>
-  <div id="balance">Жүктелуде...</div>
+  <h1 id="balance">Balance: 0</h1>
 
-  <button onclick="addMoney()">+10</button>
-  <button onclick="removeMoney()">-10</button>
+  <script>
+    const USER_ID = "123456789"; // тұрақты тест үшін
 
-  <script src="app.js"></script>
+    fetch(`https://backend-test-q8to.onrender.com/balance?user_id=${USER_ID}`)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById("balance").innerText = "Balance: " + data.balance;
+      });
+  </script>
 </body>
 </html>

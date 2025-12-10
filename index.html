@@ -1,20 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Mini App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sulifa Game</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+  #balance { font-size: 2em; margin: 20px 0; }
+  button { padding: 10px 20px; font-size: 1em; cursor: pointer; }
+</style>
 </head>
 <body>
-  <h1 id="balance">Balance: 0</h1>
 
-  <script>
-    const USER_ID = "123456789"; // тұрақты тест үшін
+<h1>Сәлем, ойыншы!</h1>
+<p>Сіздің баланс:</p>
+<div id="balance">0</div>
+<button id="refreshBtn">Баланс жаңарту</button>
 
-    fetch(`https://backend-test-q8to.onrender.com/balance?user_id=${USER_ID}`)
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById("balance").innerText = "Balance: " + data.balance;
-      });
-  </script>
+<script>
+const balanceEl = document.getElementById("balance");
+const refreshBtn = document.getElementById("refreshBtn");
+
+// Бұл жерге ойыншының уникалды ID-сін қойыңыз
+const playerId = "123";
+
+// Сервер URL
+const SERVER_URL = "https://sulifaaaaaa3server.onrender.com";
+
+// Балансты алу функциясы
+async function getBalance() {
+  try {
+    const res = await fetch(`${SERVER_URL}/balance/${playerId}`);
+    const data = await res.json();
+    balanceEl.textContent = data.balance ?? 0;
+  } catch (err) {
+    console.error("Серверге қосылу қатесі:", err);
+    balanceEl.textContent = "Қате";
+  }
+}
+
+// Басқанда жаңарту
+refreshBtn.addEventListener("click", getBalance);
+
+// Бастапқы жүктемеде серверден алу
+getBalance();
+</script>
+
 </body>
 </html>

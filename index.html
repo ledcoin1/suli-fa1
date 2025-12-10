@@ -1,50 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sulifa Game</title>
-<style>
-  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-  #balance { font-size: 2em; margin: 20px 0; }
-  button { padding: 10px 20px; font-size: 1em; cursor: pointer; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сулифа Миниапп</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #balance { font-weight: bold; font-size: 24px; margin: 20px 0; }
+  </style>
 </head>
 <body>
+  <h1>Сәлем, ойыншы!</h1>
+  <p>Сіздің баланс:</p>
+  <div id="balance">0</div>
 
-<h1>Сәлем, ойыншы!</h1>
-<p>Сіздің баланс:</p>
-<div id="balance">0</div>
-<button id="refreshBtn">Баланс жаңарту</button>
+  <button id="updateBtn">Баланс жаңарту</button>
 
-<script>
-const balanceEl = document.getElementById("balance");
-const refreshBtn = document.getElementById("refreshBtn");
+  <script>
+    const playerId = "123"; // Телеграмнан келген нақты ойыншының id-сын осы жерге қою керек
+    const ADMIN_KEY = "твой_ADMIN_KEY"; // Серверде орнатылған ADMIN_KEY
 
-// Бұл жерге ойыншының уникалды ID-сін қойыңыз
-const playerId = "123";
+    const balanceDiv = document.getElementById("balance");
+    const updateBtn = document.getElementById("updateBtn");
 
-// Сервер URL
-const SERVER_URL = "https://sulifaaaaaa3server.onrender.com";
+    // Серверден ағымдағы баланс алу
+    async function getBalance() {
+      try {
+        const res = await fetch(`https://sulifaaaaaa3server.onrender.com/balance/${playerId}`);
+        const data = await res.json();
+        balanceDiv.textContent = data.balance ?? 0;
+      } catch (err) {
+        console.error("Баланс алу қате:", err);
+      }
+    }
 
-// Балансты алу функциясы
-async function getBalance() {
-  try {
-    const res = await fetch(`${SERVER_URL}/balance/${playerId}`);
-    const data = await res.json();
-    balanceEl.textContent = data.balance ?? 0;
-  } catch (err) {
-    console.error("Серверге қосылу қатесі:", err);
-    balanceEl.textContent = "Қате";
-  }
-}
+    // Серверге жаңа баланс жіберу (мысалы 100)
+    async function updateBalance() {
+      const newBalance = 100; // Мысалы серверден өзгерту
+      try {
+        const res = await fetch("https://sulifaaaaaa3server.onrender.com/updateBalance", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "admin-key": ADMIN_KEY
+          },
+          body: JSON.stringify({ id: playerId, balance: newBalance })
+        });
+        const data = await res.json();
+        balanceDiv.textContent = data.balance;
+      } catch (err) {
+        console.error("Баланс жаңарту қате:", err);
+      }
+    }
 
-// Басқанда жаңарту
-refreshBtn.addEventListener("click", getBalance);
+    updateBtn.addEventListener("click", updateBalance);
 
-// Бастапқы жүктемеде серверден алу
-getBalance();
-</script>
-
+    // Бастапқыда баланс алу
+    getBalance();
+  </script>
 </body>
 </html>

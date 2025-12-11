@@ -1,47 +1,107 @@
 <!DOCTYPE html>
-<html lang="kk">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tas-Qagaz-Qayshy</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f3f3;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      background: #0088cc;
+      color: #fff;
+      cursor: pointer;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 
-<body style="font-family:sans-serif; background:#111; color:#fff; padding:20px">
+<body>
 
-  <h2>Сәлем, ойыншы!</h2>
-  <p><b>ID:</b> <span id="uid">...</span></p>
-  <p><b>Баланс:</b> <span id="balance">0</span></p>
+  <h2>Тас • Қағаз • Қайшы</h2>
 
-  <button onclick="loadBalance()">Баланс жаңарту</button>
+  <div class="card">
+    <p><b>Баланс:</b> <span id="balance">...</span> ₸</p>
+
+    <input id="bet" type="number" placeholder="Ставка" value="100">
+
+    <button onclick="play('rock')">🪨 Тас</button>
+    <button onclick="play('paper')">📄 Қағаз</button>
+    <button onclick="play('scissors')">✂️ Қайшы</button>
+
+    <div id="resultBox" style="margin-top:15px;"></div>
+  </div>
 
   <script>
+    const SERVER = "https://YOUR_SERVER_URL"; // 🔥 Өзіңнің сервер URL-ын қой!!!
     const tg = window.Telegram.WebApp;
-    tg.expand();
+    tg.ready();
 
-    // Telegram ID алу
-    const user = tg.initDataUnsafe?.user;
-    let userId = "guest";
+    const userId = tg.initDataUnsafe?.user?.id;
 
-    if (user && user.id) {
-      userId = user.id;
-    }
-
-    document.getElementById("uid").innerText = userId;
-
-    const SERVER = "https://sulifaaaaaa3server.onrender.com";
-
+    // Баланс жүктеу
     async function loadBalance() {
-      try {
-        const res = await fetch(`${SERVER}/balance/${userId}`);
-        const data = await res.json();
-        document.getElementById("balance").innerText = data.balance;
-      } catch (e) {
-        alert("Серверге қосылмады");
-      }
+      const res = await fetch(`${SERVER}/balance/${userId}`);
+      const data = await res.json();
+      document.getElementById("balance").innerText = data.balance;
     }
 
-    // автомат жүктеу
     loadBalance();
+
+    // Ойын ойнау
+    async function play(move) {
+      const bet = document.getElementById("bet").value;
+
+      const res = await fetch(`${SERVER}/play`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: userId,
+          bet: Number(bet),
+          userMove: move
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        document.getElementById("resultBox").innerHTML =
+          `<p style="color:red">${data.error}</p>`;
+        return;
+      }
+
+      document.getElementById("resultBox").innerHTML = `
+        <p><b>Сен:</b> ${data.userMove}</p>
+        <p><b>Бот:</b> ${data.botMove}</p>
+        <p><b>Нәтиже:</b> ${data.result}</p>
+      `;
+
+      document.getElementById("balance").innerText = data.balance;
+    }
   </script>
 
 </body>

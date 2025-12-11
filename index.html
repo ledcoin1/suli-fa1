@@ -14,6 +14,19 @@
 
   <button onclick="loadBalance()">Баланс жаңарту</button>
 
+  <h2>🪙 Баланс: <span id="balance">0</span></h2>
+
+<input type="number" id="bet" placeholder="Ставка сомасы">
+
+<br><br>
+
+<button onclick="play('rock')">✊ Тас</button>
+<button onclick="play('paper')">✋ Қағаз</button>
+<button onclick="play('scissors')">✌️ Қайшы</button>
+
+<p id="result"></p>
+
+
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
@@ -42,6 +55,54 @@
 
     // автомат жүктеу
     loadBalance();
+
+    const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "test_user";
+const API = "https://sulifaaaaaa3server.onrender.com";
+
+async function loadBalance() {
+  const res = await fetch(`${API}/balance/${userId}`);
+  const data = await res.json();
+  document.getElementById("balance").innerText = data.balance;
+}
+
+loadBalance();
+
+async function play(choice) {
+  const bet = Number(document.getElementById("bet").value);
+
+  if (!bet || bet <= 0) {
+    alert("Ставка енгіз!");
+    return;
+  }
+
+  const res = await fetch(`${API}/play`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      id: userId,
+      bet: bet,
+      choice: choice
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("result").innerText = data.error;
+    return;
+  }
+
+  document.getElementById("result").innerHTML = `
+    Сен: ${data.yourChoice} <br>
+    Бот: ${data.botChoice} <br>
+    Нәтиже: ${data.result}
+  `;
+
+  document.getElementById("balance").innerText = data.newBalance;
+}
+
   </script>
 
 </body>

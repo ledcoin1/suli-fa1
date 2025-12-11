@@ -1,76 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kk">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tas-Qagaz-Qayshy</title>
+  <title>Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f3f3f3;
-      padding: 20px;
-    }
-    .card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      background: #0088cc;
-      color: #fff;
-      cursor: pointer;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
+    body { font-family: sans-serif; background:#111; color:#fff; padding:20px; }
+    button { padding:6px 12px; margin:5px; cursor:pointer; background:#00bcd4; border:none; color:#000; font-weight:bold; }
+    input { padding:6px; width:100px; margin-right:10px; }
+    #rpsResult { margin-top:15px; font-weight:bold; }
   </style>
 </head>
 
 <body>
+  <h2>Сәлем, ойыншы!</h2>
+  <p><b>ID:</b> <span id="uid">...</span></p>
+  <p><b>Баланс:</b> <span id="balance">0</span></p>
 
-  <h2>Тас • Қағаз • Қайшы</h2>
+  <button onclick="loadBalance()">Баланс жаңарту</button>
 
-  <div class="card">
-    <p><b>Баланс:</b> <span id="balance">...</span> ₸</p>
+  <hr>
+  <h2>Тас-Қағаз-Қайшы</h2>
+  <p>Сіздің ставка: <input id="bet" type="number" value="100"> теңге</p>
+  <button onclick="play('rock')">Тас</button>
+  <button onclick="play('paper')">Қағаз</button>
+  <button onclick="play('scissors')">Қайшы</button>
 
-    <input id="bet" type="number" placeholder="Ставка" value="100">
-
-    <button onclick="play('rock')">🪨 Тас</button>
-    <button onclick="play('paper')">📄 Қағаз</button>
-    <button onclick="play('scissors')">✂️ Қайшы</button>
-
-    <div id="resultBox" style="margin-top:15px;"></div>
-  </div>
+  <p id="rpsResult"></p>
 
   <script>
-  const SERVER = "https://YOUR_SERVER_URL";
-  const tg = window.Telegram.WebApp;
-  tg.ready();
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-  // Telegram ID міндетті
-  if (!tg.initDataUnsafe?.user?.id) {
-    document.body.innerHTML = `
-      <h2 style="color:red;">❌ MiniApp тек Telegram ішінен ашылады!</h2>
-    `;
-    throw new Error("No Telegram user ID");
-  }
+    // Telegram ID алу
+    const user = tg.initDataUnsafe?.user;
+    let userId = "guest";
 
-  const userId = tg.initDataUnsafe.user.id;
+    if (user && user.id) {
+      userId = user.id;
+    }
 
+    document.getElementById("uid").innerText = userId;
 
+    const SERVER = "https://sulifaaaaaa3server.onrender.com";
+
+    // Баланс жүктеу
+    async function loadBalance() {
+      try {
+        const res = await fetch(`${SERVER}/balance/${userId}`);
+        const data = await res.json();
+        document.getElementById("balance").innerText = data.balance;
+      } catch (e) {
+        alert("Серверге қосылмады");
+      }
+    }
+
+    // Тас-Қағаз-Қайшы ойнау
+    async function play(choice) {
+      const bet = Number(document.getElementById("bet").value);
+
+      if (bet <= 0) return alert("Ставка дұрыс емес");
+
+      try {
+        const res = await fetch(`${SERVER}/playRPS`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: userId, choice, bet })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("rpsResult").innerText =
+          `Сіз: ${data.playerChoice}, Компьютер: ${data.computerChoice}, Нәтиже: ${data.result}. Баланс: ${data.balance}`;
+
+        // Балансты жаңарту
+        document.getElementById("balance").innerText = data.balance;
+      } catch (e) {
+        alert("Серверге қосылмады");
+      }
+    }
+
+    // Автоматты баланс жүктеу
+    loadBalance();
+  </script>
 </body>
 </html>

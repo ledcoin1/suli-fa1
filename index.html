@@ -57,52 +57,20 @@
   </div>
 
   <script>
-    const SERVER = "https://YOUR_SERVER_URL"; // 🔥 Өзіңнің сервер URL-ын қой!!!
-    const tg = window.Telegram.WebApp;
-    tg.ready();
+  const SERVER = "https://YOUR_SERVER_URL";
+  const tg = window.Telegram.WebApp;
+  tg.ready();
 
-    const userId = tg.initDataUnsafe?.user?.id;
+  // Telegram ID міндетті
+  if (!tg.initDataUnsafe?.user?.id) {
+    document.body.innerHTML = `
+      <h2 style="color:red;">❌ MiniApp тек Telegram ішінен ашылады!</h2>
+    `;
+    throw new Error("No Telegram user ID");
+  }
 
-    // Баланс жүктеу
-    async function loadBalance() {
-      const res = await fetch(`${SERVER}/balance/${userId}`);
-      const data = await res.json();
-      document.getElementById("balance").innerText = data.balance;
-    }
+  const userId = tg.initDataUnsafe.user.id;
 
-    loadBalance();
-
-    // Ойын ойнау
-    async function play(move) {
-      const bet = document.getElementById("bet").value;
-
-      const res = await fetch(`${SERVER}/play`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: userId,
-          bet: Number(bet),
-          userMove: move
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.error) {
-        document.getElementById("resultBox").innerHTML =
-          `<p style="color:red">${data.error}</p>`;
-        return;
-      }
-
-      document.getElementById("resultBox").innerHTML = `
-        <p><b>Сен:</b> ${data.userMove}</p>
-        <p><b>Бот:</b> ${data.botMove}</p>
-        <p><b>Нәтиже:</b> ${data.result}</p>
-      `;
-
-      document.getElementById("balance").innerText = data.balance;
-    }
-  </script>
 
 </body>
 </html>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="kk">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini App – Тас Қағаз Қайшы</title>
+  <title>Mini App – Rock Paper Scissors</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
@@ -132,7 +132,7 @@
 <body>
 <div class="container">
 
-  <h2>Тас – Қағаз – Қайшы</h2>
+  <h2>Rock – Paper – Scissors</h2>
 
   <div class="card">
     <div class="label">Telegram ID</div>
@@ -140,18 +140,18 @@
   </div>
 
   <div class="card">
-    <div class="label">Баланс</div>
+    <div class="label">Balance</div>
     <div id="balance" class="value">0</div>
-    <button class="btn" onclick="loadBalance()">Баланс жаңарту</button>
+    <button class="btn" onclick="loadBalance()">Update Balance</button>
   </div>
 
   <div class="card">
-    <div class="label">Ставка енгіз</div>
-    <input id="bet" type="number" placeholder="Ставка..." />
+    <div class="label">Enter Bet</div>
+    <input id="bet" type="number" placeholder="Bet..." />
   </div>
 
   <div class="card">
-    <div class="label">Таңда:</div>
+    <div class="label">Choose:</div>
     <div class="rps-buttons">
       <button class="rps-btn" onclick="play('rock')">🪨</button>
       <button class="rps-btn" onclick="play('paper')">📄</button>
@@ -162,7 +162,7 @@
   <div id="result" class="result-box"></div>
 
   <div class="card">
-    <h3>Ойын тарихы (соңғы 10)</h3>
+    <h3>Game History (last 10)</h3>
     <div id="history"></div>
   </div>
 
@@ -186,7 +186,7 @@
       const data = await res.json();
       animateBalance(data.balance);
     } catch (e) {
-      alert("Серверге қосылмады");
+      alert("Failed to connect to the server");
     }
   }
 
@@ -202,7 +202,7 @@
 
   async function play(choice) {
     const bet = Number(document.getElementById("bet").value);
-    if (!bet || bet <= 0) return alert("Ставка енгіз!");
+    if (!bet || bet <= 0) return alert("Enter your bet!");
 
     const res = await fetch(`${SERVER}/playRPS`, {
       method: "POST",
@@ -218,7 +218,6 @@
     resultEl.innerHTML = data.result;
     resultEl.style.color = data.win ? "#00ffae" : data.draw ? "#e0e0e0" : "#ff4d4d";
 
-    // тарихқа қосу
     history.push({
       choice: choice,
       botChoice: data.bot,
@@ -228,18 +227,17 @@
       status: data.win ? 'win' : data.draw ? 'draw' : 'lose'
     });
 
-    if (history.length > 10) history.shift(); // соңғы 10 ғана
+    if (history.length > 10) history.shift();
     renderHistory();
   }
 
   function renderHistory() {
     const container = document.getElementById("history");
     container.innerHTML = history.map(h =>
-      `<div class='history-item ${h.status}'>Ставка: ${h.bet} | Сіз: ${h.choice} | Бот: ${h.botChoice} | Нәтиже: ${h.result} | Ұтыс: ${h.amountWon}</div>`
+      `<div class='history-item ${h.status}'>Bet: ${h.bet} | You: ${h.choice} | Bot: ${h.botChoice} | Result: ${h.result} | Win: ${h.amountWon}</div>`
     ).join('');
   }
 
-  // ойыншы ойыннан шыққанда тарихты тазалау
   window.addEventListener("beforeunload", () => { history = []; });
 
   loadBalance();

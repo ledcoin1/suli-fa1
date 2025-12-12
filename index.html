@@ -115,6 +115,18 @@
       animation: fadeIn 0.4s ease;
     }
 
+    #history {
+      margin-top: 15px;
+      font-size: 14px;
+      max-height: 180px;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .history-item.win { color: #00ffae; }
+    .history-item.lose { color: #ff4d4d; }
+    .history-item.draw { color: #e0e0e0; }
+
   </style>
 </head>
 <body>
@@ -149,6 +161,11 @@
 
   <div id="result" class="result-box"></div>
 
+  <div class="card">
+    <h3>Ойын тарихы (соңғы 10)</h3>
+    <div id="history"></div>
+  </div>
+
 </div>
 
 <script>
@@ -160,6 +177,8 @@
   document.getElementById("uid").innerText = userId;
 
   const SERVER = "https://sulifaaaaaa3server.onrender.com";
+
+  let history = [];
 
   async function loadBalance() {
     try {
@@ -183,10 +202,7 @@
 
   async function play(choice) {
     const bet = Number(document.getElementById("bet").value);
-
-    if (!bet || bet <= 0) {
-      return alert("Ставка енгіз!");
-    }
+    if (!bet || bet <= 0) return alert("Ставка енгіз!");
 
     const res = await fetch(`${SERVER}/playRPS`, {
       method: "POST",
@@ -201,10 +217,32 @@
     const resultEl = document.getElementById("result");
     resultEl.innerHTML = data.result;
     resultEl.style.color = data.win ? "#00ffae" : data.draw ? "#e0e0e0" : "#ff4d4d";
+
+    // тарихқа қосу
+    history.push({
+      choice: choice,
+      botChoice: data.bot,
+      result: data.result,
+      bet: bet,
+      amountWon: data.win ? bet * 1.85 : 0,
+      status: data.win ? 'win' : data.draw ? 'draw' : 'lose'
+    });
+
+    if (history.length > 10) history.shift(); // соңғы 10 ғана
+    renderHistory();
   }
+
+  function renderHistory() {
+    const container = document.getElementById("history");
+    container.innerHTML = history.map(h =>
+      `<div class='history-item ${h.status}'>Ставка: ${h.bet} | Сіз: ${h.choice} | Бот: ${h.botChoice} | Нәтиже: ${h.result} | Ұтыс: ${h.amountWon}</div>`
+    ).join('');
+  }
+
+  // ойыншы ойыннан шыққанда тарихты тазалау
+  window.addEventListener("beforeunload", () => { history = []; });
 
   loadBalance();
 </script>
-
 </body>
 </html>

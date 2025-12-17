@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini App – RPS Module</title>
+  <title>Mini App – Interaction Module</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
@@ -23,8 +23,8 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px);} 
-      to { opacity: 1; transform: translateY(0);} 
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
     }
 
     h2 {
@@ -43,7 +43,7 @@
     }
 
     .label {
-      opacity: 0.75;
+      opacity: 0.8;
       font-size: 14px;
     }
 
@@ -101,7 +101,7 @@
       min-height: 28px;
     }
 
-    #log {
+    #trace {
       margin-top: 15px;
       font-size: 14px;
       max-height: 180px;
@@ -109,16 +109,16 @@
       text-align: left;
     }
 
-    .log-item.rafg { color: #00ffae; }
-    .log-item.teln { color: #ff4d4d; }
-    .log-item.moxo { color: #e0e0e0; }
+    .trace-item.rafg { color: #00ffae; }
+    .trace-item.teln { color: #ff4d4d; }
+    .trace-item.moxo { color: #e0e0e0; }
   </style>
 </head>
 
 <body>
 <div class="container">
 
-  <h2>Interaction Module</h2>
+  <h2>Interaction Flow</h2>
 
   <div class="card">
     <div class="label">Session ID</div>
@@ -137,11 +137,11 @@
   </div>
 
   <div class="card">
-    <div class="label">Select Mode</div>
+    <div class="label">Select</div>
     <div class="rps-buttons">
-      <button class="rps-btn" onclick="runFlow('rock')">🪨</button>
-      <button class="rps-btn" onclick="runFlow('paper')">📄</button>
-      <button class="rps-btn" onclick="runFlow('scissors')">✂️</button>
+      <button class="rps-btn" onclick="run('rock')">🪨</button>
+      <button class="rps-btn" onclick="run('paper')">📄</button>
+      <button class="rps-btn" onclick="run('scissors')">✂️</button>
     </div>
   </div>
 
@@ -149,7 +149,7 @@
 
   <div class="card">
     <h3>Recent Activity</h3>
-    <div id="log"></div>
+    <div id="trace"></div>
   </div>
 
 </div>
@@ -158,61 +158,63 @@
   const tg = window.Telegram.WebApp;
   tg.expand();
 
-  const usr = tg.initDataUnsafe?.user;
-  const sid = usr?.id || "guest";
-  document.getElementById("uid").innerText = sid;
+  const user = tg.initDataUnsafe?.user;
+  const userId = user?.id || "guest";
+  document.getElementById("uid").innerText = userId;
 
-  const ENDPOINT = "https://sulifaaaaaa3server.onrender.com";
+  const SERVER = "https://sulifaaaaaa3server.onrender.com";
 
   let trace = [];
 
   async function syncEnergy() {
-    const res = await fetch(`${ENDPOINT}/balance/${sid}`);
+    const res = await fetch(`${SERVER}/balance/${userId}`);
     const data = await res.json();
-    updateEnergy(data.balance);
+    animateEnergy(data.balance);
   }
 
-  function updateEnergy(val) {
+  function animateEnergy(val) {
     const el = document.getElementById("energy");
     el.innerText = val;
   }
 
-  async function runFlow(mode) {
-    const input = Number(document.getElementById("inputVal").value);
-    if (!input || input <= 0) return alert("Invalid input");
+  async function run(choice) {
+    const bet = Number(document.getElementById("inputVal").value);
+    if (!bet || bet <= 0) return alert("Invalid input");
 
-    const res = await fetch(`${ENDPOINT}/syncFlow`, {
+    const res = await fetch(`${SERVER}/playRPS`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: sid, input, mode })
+      body: JSON.stringify({ id: userId, bet, choice })
     });
 
     const data = await res.json();
-    updateEnergy(data.balance);
+    animateEnergy(data.balance);
 
     const out = document.getElementById("output");
     out.innerHTML = data.result;
 
     const state = data.win ? "rafg" : data.draw ? "moxo" : "teln";
-    out.style.color = state === "rafg" ? "#00ffae" : state === "moxo" ? "#e0e0e0" : "#ff4d4d";
+    out.style.color =
+      state === "rafg" ? "#00ffae" :
+      state === "moxo" ? "#e0e0e0" :
+      "#ff4d4d";
 
     trace.push({
-      mode,
+      choice,
       bot: data.bot,
-      result: data.result,
-      input,
-      delta: data.win ? input * 1.85 : 0,
+      input: bet,
+      delta: data.win ? bet * 1.85 : 0,
       state
     });
 
     if (trace.length > 10) trace.shift();
-    renderLog();
+    renderTrace();
   }
 
-  function renderLog() {
-    document.getElementById("log").innerHTML = trace.map(t =>
-      `<div class="log-item ${t.state}">
-        Val: ${t.input} | A: ${t.mode} | B: ${t.bot} | Δ: ${t.delta}
+  function renderTrace() {
+    document.getElementById("trace").innerHTML = trace.map(t =>
+      `<div class="trace-item ${t.state}">
+        Val: ${t.input} | A: ${t.choice} | B: ${t.bot} | Δ: ${t.delta}
       </div>`
     ).join("");
   }

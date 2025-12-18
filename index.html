@@ -1,257 +1,181 @@
-<!DOCTYPE html> 
-<html lang="en">
+<!DOCTYPE html>
+<html lang="kk">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini App – Rock Paper Scissors</title>
+  <title>Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     body {
       margin: 0;
       padding: 0;
-      font-family: "Inter", sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      background: #0e0f12;
       color: #fff;
-      height: 100vh;
-      overflow-x: hidden;
+      font-family: "Segoe UI", sans-serif;
     }
 
     .container {
-      max-width: 420px;
+      padding: 20px;
+      max-width: 450px;
       margin: auto;
-      padding: 22px;
-      animation: fadeIn 0.7s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px);} 
-      to { opacity: 1; transform: translateY(0);} 
-    }
-
-    h2 {
-      text-align: center;
-      font-size: 28px;
-      margin-bottom: 10px;
-      font-weight: 700;
     }
 
     .card {
-      background: #181818;
-      padding: 18px;
-      border-radius: 16px;
-      box-shadow: 0 0 22px rgba(0,0,0,0.4);
+      background: #1a1c22;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
       margin-bottom: 20px;
       transition: 0.3s;
     }
 
-    .card:hover {
-      transform: scale(1.02);
+    h2 {
+      margin-top: 0;
+      font-size: 26px;
     }
 
-    .label {
-      opacity: 0.8;
-      font-size: 14px;
-    }
-
-    .value {
+    .balance {
       font-size: 22px;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 18px;
-      border-radius: 12px;
-      border: none;
-      outline: none;
-      background: #222;
-      color: #fff;
-      margin-top: 10px;
+      margin: 5px 0 15px 0;
+      font-weight: bold;
     }
 
     .btn {
-      width: 100%;
-      padding: 14px;
-      background: #00c2ff;
-      border-radius: 12px;
-      margin-top: 18px;
+      display: inline-block;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
       border: none;
-      font-size: 18px;
-      font-weight: 600;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
       cursor: pointer;
+      margin: 4px 0;
+      font-weight: bold;
+      width: 100%;
       transition: 0.25s;
     }
 
     .btn:hover {
-      background: #00e0ff;
-      transform: translateY(-2px);
-    }
-
-    .rps-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
+      opacity: 0.85;
+      transform: scale(1.02);
     }
 
     .rps-btn {
-      width: 30%;
-      padding: 16px;
-      font-size: 18px;
-      border-radius: 12px;
+      width: 31%;
+      display: inline-block;
+      padding: 12px 10px;
+      font-size: 16px;
+      margin-right: 1%;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 10px;
       border: none;
-      cursor: pointer;
-      background: #333;
-      transition: 0.25s;
+      outline: none;
+      margin-bottom: 15px;
     }
-    .rps-btn:hover { background:#444; transform: scale(1.05);}    
 
-    .result-box {
+    #rpsResult {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 12px;
+      padding: 10px;
       text-align: center;
-      margin-top: 25px;
-      font-size: 22px;
-      font-weight: 700;
-      min-height: 28px;
-      animation: fadeIn 0.4s ease;
+      border-radius: 10px;
     }
 
-    #history {
-      margin-top: 15px;
-      font-size: 14px;
-      max-height: 180px;
-      overflow-y: auto;
-      text-align: left;
-    }
-
-    .history-item.win { color: #00ffae; }
-    .history-item.lose { color: #ff4d4d; }
-    .history-item.draw { color: #e0e0e0; }
+    .win { background: #004d1a; color:#4aff84; }
+    .lose { background:#4d0000; color:#ff6b6b; }
+    .draw { background:#333; color:#eee; }
 
   </style>
 </head>
+
 <body>
-<div class="container">
+  <div class="container">
 
-  <h2>Rock – Paper – Scissors</h2>
+    <!-- Ойыншы картасы -->
+    <div class="card">
+      <h2>👋 Сәлем, ойыншы!</h2>
+      <p><b>ID:</b> <span id="uid">...</span></p>
+      <p class="balance">💰 Баланс: <span id="balance">0</span> ₸</p>
 
-  <div class="card">
-    <div class="label">Telegram ID</div>
-    <div id="uid" class="value">...</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Balance</div>
-    <div id="balance" class="value">0</div>
-    <button class="btn" onclick="loadBalance()">Update Balance</button>
-  </div>
-
-  <div class="card">
-    <div class="label">Enter Bet</div>
-    <input id="bet" type="number" placeholder="Bet..." />
-  </div>
-
-  <div class="card">
-    <div class="label">Choose:</div>
-    <div class="rps-buttons">
-      <button class="rps-btn" onclick="play('rock')">🪨</button>
-      <button class="rps-btn" onclick="play('paper')">📄</button>
-      <button class="rps-btn" onclick="play('scissors')">✂️</button>
+      <button class="btn" onclick="loadBalance()">🔄 Баланс жаңарту</button>
     </div>
+
+    <!-- RPS картасы -->
+    <div class="card">
+      <h2>🎮 Тас — Қағаз — Қайшы</h2>
+
+      <p>💸 Ставка:</p>
+      <input id="bet" type="number" value="100">
+
+      <div>
+        <button class="btn rps-btn" onclick="play('rock')">🪨 Тас</button>
+        <button class="btn rps-btn" onclick="play('paper')">📄 Қағаз</button>
+        <button class="btn rps-btn" onclick="play('scissors')">✂️ Қайшы</button>
+      </div>
+
+      <p id="rpsResult"></p>
+    </div>
+
   </div>
 
-  <div id="result" class="result-box"></div>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-  <div class="card">
-    <h3>Game History (last 10)</h3>
-    <div id="history"></div>
-  </div>
+    const user = tg.initDataUnsafe?.user;
+    let userId = user?.id || "guest";
 
-</div>
+    document.getElementById("uid").innerText = userId;
 
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand();
+    const SERVER = "https://sulifaaaaaa3server.onrender.com";
 
-  const user = tg.initDataUnsafe?.user;
-  let userId = user?.id || "guest";
-  document.getElementById("uid").innerText = userId;
-
-  const SERVER = "https://sulifaaaaaa3server.onrender.com";
-
-  let history = [];
-
-  async function loadBalance() {
-    try {
-      const res = await fetch(`${SERVER}/balance/${userId}`);
-      const data = await res.json();
-      animateBalance(data.balance);
-    } catch (e) {
-      alert("Failed to connect to the server");
-    }
-  }
-
-  function animateBalance(newVal){
-    const el = document.getElementById("balance");
-    el.style.transition="0.3s";
-    el.style.transform="scale(1.25)";
-    setTimeout(()=>{
-      el.innerText = newVal;
-      el.style.transform="scale(1)";
-    },200);
-  }
-
-  async function play(choice) {
-    const bet = Number(document.getElementById("bet").value);
-    if (!bet || bet <= 0) return alert("Enter your bet!");
-
-    // 🔹 серверден боттың рандом таңдауын аламыз
-    let botChoice = '';
-    try {
-      const botRes = await fetch(`${SERVER}/bot_pick`);
-      const botData = await botRes.json();
-      botChoice = botData.bot;
-    } catch(e){
-      alert("Failed to get bot choice");
-      return;
+    async function loadBalance() {
+      try {
+        const res = await fetch(`${SERVER}/balance/${userId}`);
+        const data = await res.json();
+        document.getElementById("balance").innerText = data.balance;
+      } catch (e) {
+        alert("Серверге қосылмады");
+      }
     }
 
-    const res = await fetch(`${SERVER}/playRPS`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: userId, bet, choice, bot: botChoice })
-    });
+    async function play(choice) {
+      const bet = Number(document.getElementById("bet").value);
+      if (bet <= 0) return alert("Ставка дұрыс емес");
 
-    const data = await res.json();
+      try {
+        const res = await fetch(`${SERVER}/playRPS`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: userId, choice, bet })
+        });
 
-    animateBalance(data.balance);
+        const data = await res.json();
 
-    const resultEl = document.getElementById("result");
-    resultEl.innerHTML = data.result;
-    resultEl.style.color = data.win ? "#00ffae" : data.draw ? "#e0e0e0" : "#ff4d4d";
+        const div = document.getElementById("rpsResult");
+        div.innerText =
+          `Сіз: ${data.playerChoice} | Компьютер: ${data.computerChoice}\nНәтиже: ${data.result.toUpperCase()}`;
 
-    history.push({
-      choice: choice,
-      botChoice: botChoice,
-      result: data.result,
-      bet: bet,
-      amountWon: data.win ? bet * 1.85 : 0,
-      status: data.win ? 'win' : data.draw ? 'draw' : 'lose'
-    });
+        div.className = "";
+        if (data.result === "win") div.classList.add("win");
+        if (data.result === "lose") div.classList.add("lose");
+        if (data.result === "draw") div.classList.add("draw");
 
-    if (history.length > 10) history.shift();
-    renderHistory();
-  }
+        document.getElementById("balance").innerText = data.balance;
 
-  function renderHistory() {
-    const container = document.getElementById("history");
-    container.innerHTML = history.map(h =>
-      `<div class='history-item ${h.status}'>Bet: ${h.bet} | You: ${h.choice} | Bot: ${h.botChoice} | Result: ${h.result} | Win: ${h.amountWon}</div>`
-    ).join('');
-  }
+      } catch (e) {
+        alert("Серверге қосылмады");
+      }
+    }
 
-  window.addEventListener("beforeunload", () => { history = []; });
+    loadBalance();
+  </script>
 
-  loadBalance();
-</script>
 </body>
 </html>

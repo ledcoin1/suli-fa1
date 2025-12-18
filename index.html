@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini App – Interaction Module</title>
+  <title>Mini App – Rock Paper Scissors</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
@@ -23,13 +23,13 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px);}
-      to { opacity: 1; transform: translateY(0);}
+      from { opacity: 0; transform: translateY(20px);} 
+      to { opacity: 1; transform: translateY(0);} 
     }
 
     h2 {
       text-align: center;
-      font-size: 26px;
+      font-size: 28px;
       margin-bottom: 10px;
       font-weight: 700;
     }
@@ -40,6 +40,11 @@
       border-radius: 16px;
       box-shadow: 0 0 22px rgba(0,0,0,0.4);
       margin-bottom: 20px;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
     }
 
     .label {
@@ -75,6 +80,12 @@
       font-size: 18px;
       font-weight: 600;
       cursor: pointer;
+      transition: 0.25s;
+    }
+
+    .btn:hover {
+      background: #00e0ff;
+      transform: translateY(-2px);
     }
 
     .rps-buttons {
@@ -91,7 +102,9 @@
       border: none;
       cursor: pointer;
       background: #333;
+      transition: 0.25s;
     }
+    .rps-btn:hover { background:#444; transform: scale(1.05);}    
 
     .result-box {
       text-align: center;
@@ -99,9 +112,10 @@
       font-size: 22px;
       font-weight: 700;
       min-height: 28px;
+      animation: fadeIn 0.4s ease;
     }
 
-    #trace {
+    #history {
       margin-top: 15px;
       font-size: 14px;
       max-height: 180px;
@@ -109,47 +123,47 @@
       text-align: left;
     }
 
-    .trace-item.rafg { color: #00ffae; }
-    .trace-item.teln { color: #ff4d4d; }
-    .trace-item.moxo { color: #e0e0e0; }
+    .history-item.win { color: #00ffae; }
+    .history-item.lose { color: #ff4d4d; }
+    .history-item.draw { color: #e0e0e0; }
+
   </style>
 </head>
-
 <body>
 <div class="container">
 
-  <h2>Interaction Flow</h2>
+  <h2>Rock – Paper – Scissors</h2>
 
   <div class="card">
-    <div class="label">Session ID</div>
+    <div class="label">Telegram ID</div>
     <div id="uid" class="value">...</div>
   </div>
 
   <div class="card">
-    <div class="label">Energy</div>
-    <div id="energy" class="value">0</div>
-    <button class="btn" onclick="syncEnergy()">Refresh</button>
+    <div class="label">Balance</div>
+    <div id="balance" class="value">0</div>
+    <button class="btn" onclick="loadBalance()">Update Balance</button>
   </div>
 
   <div class="card">
-    <div class="label">Input Value</div>
-    <input id="inputVal" type="number" placeholder="Enter value..." />
+    <div class="label">Enter Bet</div>
+    <input id="bet" type="number" placeholder="Bet..." />
   </div>
 
   <div class="card">
-    <div class="label">Select</div>
+    <div class="label">Choose:</div>
     <div class="rps-buttons">
-      <button class="rps-btn" onclick="run('rock')">🪨</button>
-      <button class="rps-btn" onclick="run('paper')">📄</button>
-      <button class="rps-btn" onclick="run('scissors')">✂️</button>
+      <button class="rps-btn" onclick="play('rock')">🪨</button>
+      <button class="rps-btn" onclick="play('paper')">📄</button>
+      <button class="rps-btn" onclick="play('scissors')">✂️</button>
     </div>
   </div>
 
-  <div id="output" class="result-box"></div>
+  <div id="result" class="result-box"></div>
 
   <div class="card">
-    <h3>Recent Activity</h3>
-    <div id="trace"></div>
+    <h3>Game History (last 10)</h3>
+    <div id="history"></div>
   </div>
 
 </div>
@@ -159,67 +173,85 @@
   tg.expand();
 
   const user = tg.initDataUnsafe?.user;
-  const userId = user?.id || "guest";
+  let userId = user?.id || "guest";
   document.getElementById("uid").innerText = userId;
 
   const SERVER = "https://sulifaaaaaa3server.onrender.com";
 
-  let trace = [];
+  let history = [];
 
-  async function syncEnergy() {
-    const res = await fetch(`${SERVER}/balance/${userId}`);
-    const data = await res.json();
-    animateEnergy(data.balance);
+  async function loadBalance() {
+    try {
+      const res = await fetch(`${SERVER}/balance/${userId}`);
+      const data = await res.json();
+      animateBalance(data.balance);
+    } catch (e) {
+      alert("Failed to connect to the server");
+    }
   }
 
-  function animateEnergy(val) {
-    const el = document.getElementById("energy");
-    el.innerText = val;
+  function animateBalance(newVal){
+    const el = document.getElementById("balance");
+    el.style.transition="0.3s";
+    el.style.transform="scale(1.25)";
+    setTimeout(()=>{
+      el.innerText = newVal;
+      el.style.transform="scale(1)";
+    },200);
   }
 
-  async function run(choice) {
-    const bet = Number(document.getElementById("inputVal").value);
-    if (!bet || bet <= 0) return alert("Invalid input");
+  async function play(choice) {
+    const bet = Number(document.getElementById("bet").value);
+    if (!bet || bet <= 0) return alert("Enter your bet!");
+
+    // 🔹 серверден боттың рандом таңдауын аламыз
+    let botChoice = '';
+    try {
+      const botRes = await fetch(`${SERVER}/bot_pick`);
+      const botData = await botRes.json();
+      botChoice = botData.bot;
+    } catch(e){
+      alert("Failed to get bot choice");
+      return;
+    }
 
     const res = await fetch(`${SERVER}/playRPS`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: userId, bet, choice })
+      body: JSON.stringify({ id: userId, bet, choice, bot: botChoice })
     });
 
     const data = await res.json();
-    animateEnergy(data.balance);
 
-    const out = document.getElementById("output");
-    out.innerHTML = data.result;
+    animateBalance(data.balance);
 
-    const state = data.win ? "rafg" : data.draw ? "moxo" : "teln";
-    out.style.color =
-      state === "rafg" ? "#00ffae" :
-      state === "moxo" ? "#e0e0e0" :
-      "#ff4d4d";
+    const resultEl = document.getElementById("result");
+    resultEl.innerHTML = data.result;
+    resultEl.style.color = data.win ? "#00ffae" : data.draw ? "#e0e0e0" : "#ff4d4d";
 
-    trace.push({
-      choice,
-      bot: data.bot,
-      input: bet,
-      delta: data.win ? bet * 1.85 : 0,
-      state
+    history.push({
+      choice: choice,
+      botChoice: botChoice,
+      result: data.result,
+      bet: bet,
+      amountWon: data.win ? bet * 1.85 : 0,
+      status: data.win ? 'win' : data.draw ? 'draw' : 'lose'
     });
 
-    if (trace.length > 10) trace.shift();
-    renderTrace();
+    if (history.length > 10) history.shift();
+    renderHistory();
   }
 
-  function renderTrace() {
-    document.getElementById("trace").innerHTML = trace.map(t =>
-      `<div class="trace-item ${t.state}">
-        Val: ${t.input} | A: ${t.choice} | B: ${t.bot} | Δ: ${t.delta}
-      </div>`
-    ).join("");
+  function renderHistory() {
+    const container = document.getElementById("history");
+    container.innerHTML = history.map(h =>
+      `<div class='history-item ${h.status}'>Bet: ${h.bet} | You: ${h.choice} | Bot: ${h.botChoice} | Result: ${h.result} | Win: ${h.amountWon}</div>`
+    ).join('');
   }
 
-  syncEnergy();
+  window.addEventListener("beforeunload", () => { history = []; });
+
+  loadBalance();
 </script>
 </body>
 </html>
